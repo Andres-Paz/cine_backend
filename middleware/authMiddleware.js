@@ -1,0 +1,18 @@
+const jwt = require('jsonwebtoken');
+
+const authenticateJWT = (req, res, next) => {
+    const token = req.header("Authorization")?.split(" ")[1];
+    if (!token) {
+        return res.status(403).json({ message: 'Acceso denegado. No se proporcionó un token.' });
+    }
+
+    jwt.verify(token, 'secreto', (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Token no válido.' });
+        }
+        req.user = user;
+        next();
+    });
+};
+
+module.exports = authenticateJWT;
