@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const funcionService = require('../funciones/funcionService');
+const authenticateJWT = require('../middleware/authMiddleware');
 
 // Crear función
-router.post('/', async (req, res) => {
+router.post('/',authenticateJWT, async (req, res) => {
     try {
         const funcion = await funcionService.createFuncion(req.body);
         res.json(funcion);
@@ -13,7 +14,7 @@ router.post('/', async (req, res) => {
 });
 
 // Obtener todas
-router.get('/', async (req, res) => {
+router.get('/',authenticateJWT, async (req, res) => {
     try {
         const funciones = await funcionService.getFunciones();
         res.json(funciones);
@@ -23,7 +24,7 @@ router.get('/', async (req, res) => {
 });
 
 // Obtener por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id',authenticateJWT, async (req, res) => {
     try {
         const funcion = await funcionService.getFuncionById(req.params.id);
         res.json(funcion);
@@ -33,7 +34,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Actualizar
-router.put('/:id', async (req, res) => {
+router.put('/:id',authenticateJWT, async (req, res) => {
     try {
         const result = await funcionService.updateFuncion(req.params.id, req.body);
         res.json(result);
@@ -43,7 +44,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Eliminar
-router.delete('/:id', async (req, res) => {
+router.delete('/:id',authenticateJWT, async (req, res) => {
     try {
         const result = await funcionService.deleteFuncion(req.params.id);
         res.json(result);

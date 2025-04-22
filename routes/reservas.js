@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const ticketService = require('../reservas/reservaService');
+const authenticateJWT = require('../middleware/authMiddleware');
 
 // Crear ticket
-router.post('/', async (req, res) => {
+router.post('/',authenticateJWT, async (req, res) => {
     try {
         const ticket = await ticketService.createTicket(req.body);
         res.status(201).json(ticket);
@@ -13,7 +14,7 @@ router.post('/', async (req, res) => {
 });
 
 // Obtener todos los tickets
-router.get('/', async (req, res) => {
+router.get('/',authenticateJWT, async (req, res) => {
     try {
         const tickets = await ticketService.getAllTickets();
         res.json(tickets);
@@ -23,7 +24,7 @@ router.get('/', async (req, res) => {
 });
 
 // Obtener ticket por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id',authenticateJWT, async (req, res) => {
     try {
         const ticket = await ticketService.getTicketById(req.params.id);
         if (!ticket) return res.status(404).json({ error: 'Ticket no encontrado' });
@@ -34,7 +35,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Actualizar ticket
-router.put('/:id', async (req, res) => {
+router.put('/:id',authenticateJWT, async (req, res) => {
     try {
         const updated = await ticketService.updateTicket(req.params.id, req.body);
         res.json(updated);
@@ -44,7 +45,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Eliminar ticket
-router.delete('/:id', async (req, res) => {
+router.delete('/:id',authenticateJWT, async (req, res) => {
     try {
         const result = await ticketService.deleteTicket(req.params.id);
         res.json(result);
