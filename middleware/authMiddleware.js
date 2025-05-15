@@ -6,7 +6,7 @@ const authenticateJWT = (req, res, next) => {
         return res.status(403).json({ message: 'Acceso denegado. No se proporcionó un token.' });
     }
 
-    jwt.verify(token, 'secreto', (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             return res.status(403).json({ message: 'Token no válido.' });
         }

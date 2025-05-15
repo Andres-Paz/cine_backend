@@ -13,8 +13,29 @@ const loginUser = async ({ username, password }) => {
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) return reject({ message: 'Credenciales inválidas.' });
 
-            const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, 'secreto', { expiresIn: '1h' });
-            resolve({ message: 'Login exitoso', token });
+            const queryPerfil = `SELECT * FROM perfil WHERE id = ?`;
+            db.query(queryPerfil, [user.perfil_id], (err, results) => {
+                if (err) return reject({ message: 'Error en el servidor.' });
+                if (results.length === 0) return reject({ message: 'Perfil no encontrado.' });
+
+                const perfil = results[0];
+
+                const token = jwt.sign(
+                    { id: user.id, username: user.username, role: user.role },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '1h' }
+                );
+
+                resolve({
+                    data: {
+                        id: user.id,
+                        username: user.username,
+                        role: user.role,
+                        perfil: perfil
+                    },
+                    token: token
+                });
+            });
         });
     });
 };

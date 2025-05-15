@@ -1,22 +1,21 @@
 const db = require('../config/db');
 
-// Crear función
-const createFuncion = ({ fecha, hora_inicio, hora_final, sala_id }) => {
+
+const createFuncion = ({ fecha, hora_inicio, hora_final, sala_id, pelicula_id}) => {
     return new Promise((resolve, reject) => {
-        if (!fecha || !hora_inicio || !hora_final || !sala_id) {
+        if (!fecha || !hora_inicio || !hora_final || !sala_id || !pelicula_id) {
             return reject({ message: 'Todos los campos son requeridos' });
         }
 
-        const query = 'INSERT INTO funciones (fecha, hora_inicio, hora_final, sala_id) VALUES (?, ?, ?, ?)';
+        const query = 'INSERT INTO funciones (fecha, hora_inicio, hora_final, sala_id, pelicula_id) VALUES (?, ?, ?, ?, ?)';
         const fechaValidada = new Date(fecha);
-        db.query(query, [fechaValidada, hora_inicio, hora_final, sala_id], (err, result) => {
+        db.query(query, [fechaValidada, hora_inicio, hora_final, sala_id, pelicula_id], (err, result) => {
             if (err) return reject(err);
-            resolve({ id: result.insertId, fechaValidada, hora_inicio, hora_final, sala_id });
+            resolve({ id: result.insertId, fechaValidada, hora_inicio, hora_final, sala_id, pelicula_id});
         });
     });
 };
 
-// Obtener todas las funciones
 const getFunciones = () => {
     return new Promise((resolve, reject) => {
         const query = 'SELECT * FROM funciones';
@@ -49,9 +48,10 @@ const updateFuncion = (id, { fecha, hora_inicio, hora_final, sala_id }) => {
             const nuevaHoraInicio = hora_inicio || existing.hora_inicio;
             const nuevaHoraFinal = hora_final || existing.hora_final;
             const nuevoSalaId = sala_id || existing.sala_id;
+            const nuevoPeliculaId = pelicula_id || existing.pelicula_id;
 
             const query = 'UPDATE funciones SET fecha = ?, hora_inicio = ?, hora_final = ?, sala_id = ? WHERE id = ?';
-            db.query(query, [nuevaFecha, nuevaHoraInicio, nuevaHoraFinal, nuevoSalaId, id], (err) => {
+            db.query(query, [nuevaFecha, nuevaHoraInicio, nuevaHoraFinal, nuevoSalaId, nuevoPeliculaId, id], (err) => {
                 if (err) return reject(err);
                 resolve({ message: 'Función actualizada correctamente' });
             });

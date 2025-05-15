@@ -5,9 +5,11 @@ const router = express.Router();
 router.post('/login', async (req, res) => {
     try {
         const response = await loginUser(req.body);
-        res.status(200).json(response);
+        res.setHeader('Access-Control-Expose-Headers', 'Authorization');
+        res.setHeader('Authorization', `Bearer ${response.token}`);
+        res.status(200).json(response.data);
     } catch (error) {
-        res.status(401).json(error);
+        res.status(401).json({ message: 'Credenciales incorrectas' });
     }
 });
 
