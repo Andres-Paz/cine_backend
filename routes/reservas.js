@@ -14,14 +14,16 @@ router.post('/',authenticateJWT, async (req, res) => {
 });
 
 // Obtener todos los tickets
-router.get('/',authenticateJWT, async (req, res) => {
+router.get('/', authenticateJWT, async (req, res) => {
     try {
-        const tickets = await ticketService.getAllTickets();
+        const { funciones_id } = req.query;
+        const tickets = await ticketService.getAllTickets(funciones_id);
         res.json(tickets);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Obtener ticket por ID
 router.get('/:id',authenticateJWT, async (req, res) => {

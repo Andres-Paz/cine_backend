@@ -39,14 +39,23 @@ const createTicket = async ({ fecha, precio, butaca, perfil_id, funciones_id }) 
 };
 
 // Obtener todos los tickets
-const getAllTickets = () => {
+const getAllTickets = (funcion_id) => {
     return new Promise((resolve, reject) => {
-        db.query('SELECT * FROM ticket', (err, results) => {
+        let query = 'SELECT * FROM ticket';
+        const params = [];
+
+        if (funcion_id) {
+            query += ' WHERE funciones_id = ?';
+            params.push(funcion_id);
+        }
+
+        db.query(query, params, (err, results) => {
             if (err) return reject(err);
             resolve(results);
         });
     });
 };
+
 
 // Obtener ticket por ID
 const getTicketById = (id) => {
