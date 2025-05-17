@@ -14,14 +14,16 @@ router.post('/',authenticateJWT, async (req, res) => {
 });
 
 // Obtener todas
-router.get('/',authenticateJWT, async (req, res) => {
+router.get('/', authenticateJWT, async (req, res) => {
     try {
-        const funciones = await funcionService.getFunciones();
+        const { pelicula_id } = req.query;
+        const funciones = await funcionService.getFunciones(pelicula_id);
         res.json(funciones);
     } catch (error) {
         res.status(500).json(error);
     }
 });
+
 
 // Obtener por ID
 router.get('/:id',authenticateJWT, async (req, res) => {

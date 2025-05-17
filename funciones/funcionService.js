@@ -16,15 +16,31 @@ const createFuncion = ({ fecha, hora_inicio, hora_final, sala_id, pelicula_id}) 
     });
 };
 
-const getFunciones = () => {
+const getFunciones = (pelicula_id) => {
     return new Promise((resolve, reject) => {
-        const query = 'SELECT * FROM funciones';
-        db.query(query, (err, results) => {
+        const now = new Date();
+        const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        const currentTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+
+        let query = `
+            SELECT * FROM funciones
+            WHERE (fecha > ? OR (fecha = ? AND hora_inicio >= ?))
+        `;
+        const params = [today, today, currentTime];
+
+        if (pelicula_id) {
+            query += ' AND pelicula_id = ?';
+            params.push(pelicula_id);
+        }
+
+        db.query(query, params, (err, results) => {
             if (err) return reject(err);
             resolve(results);
         });
     });
 };
+
+
 
 // Obtener función por ID
 const getFuncionById = (id) => {
