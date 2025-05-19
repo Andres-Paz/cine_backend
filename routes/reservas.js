@@ -16,8 +16,8 @@ router.post('/',authenticateJWT, async (req, res) => {
 // Obtener todos los tickets
 router.get('/', authenticateJWT, async (req, res) => {
     try {
-        const { funciones_id } = req.query;
-        const tickets = await ticketService.getAllTickets(funciones_id);
+        const { funciones_id, perfil_id } = req.query;
+        const tickets = await ticketService.getAllTickets(funciones_id, perfil_id);
         res.json(tickets);
     } catch (error) {
         res.status(500).json({ error: error.message });

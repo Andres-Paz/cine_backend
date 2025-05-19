@@ -38,15 +38,25 @@ const createTicket = async ({ fecha, precio, butaca, perfil_id, funciones_id }) 
     });
 };
 
-// Obtener todos los tickets
-const getAllTickets = (funcion_id) => {
+// ✅ Obtener todos los tickets con filtros opcionales por funcion_id y perfil_id
+const getAllTickets = (funcion_id, perfil_id) => {
     return new Promise((resolve, reject) => {
         let query = 'SELECT * FROM ticket';
+        const conditions = [];
         const params = [];
 
         if (funcion_id) {
-            query += ' WHERE funciones_id = ?';
+            conditions.push('funciones_id = ?');
             params.push(funcion_id);
+        }
+
+        if (perfil_id) {
+            conditions.push('perfil_id = ?');
+            params.push(perfil_id);
+        }
+
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
         }
 
         db.query(query, params, (err, results) => {
@@ -55,7 +65,6 @@ const getAllTickets = (funcion_id) => {
         });
     });
 };
-
 
 // Obtener ticket por ID
 const getTicketById = (id) => {
@@ -70,7 +79,6 @@ const getTicketById = (id) => {
 // Actualizar ticket
 const updateTicket = (id, { fecha, precio, butaca, perfil_id, funciones_id }) => {
     return new Promise((resolve, reject) => {
-        // Solo se actualizan los campos proporcionados
         getTicketById(id).then(ticketExistente => {
             if (!ticketExistente) return reject({ message: 'Ticket no encontrado' });
 

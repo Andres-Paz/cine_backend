@@ -1,6 +1,33 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
+const getAllUsers = () => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT u.id, u.username, u.role,
+                   p.id AS perfil_id, p.nombre, p.apellido
+            FROM usuarios u
+            INNER JOIN perfil p ON u.perfil_id = p.id
+        `;
+        db.query(query, (err, results) => {
+            if (err) return reject(err);
+
+            const users = results.map(user => ({
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                perfil: {
+                    id: user.perfil_id,
+                    nombre: user.nombre,
+                    apellido: user.apellido
+                }
+            }));
+
+            resolve(users);
+        });
+    });
+};
+
 const createUser = async ({ nombre, apellido, username, password, role }) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     return new Promise((resolve, reject) => {
@@ -18,4 +45,36 @@ const createUser = async ({ nombre, apellido, username, password, role }) => {
     });
 };
 
-module.exports = { createUser };
+const getCurrentUserWithProfile = async (userId) => {
+    return new Promise((resolve, reject) => {
+        const query =`
+            SELECT u.id, u.username, u.role,
+                   p.id AS perfil_id, p.nombre, p.apellido
+            FROM usuarios u
+            INNER JOIN perfil p ON u.perfil_id = p.id
+            WHERE u.id = ?`
+        ;
+        db.query(query, [userId], (err, results) => {
+            if (err) return reject(err);
+            if (results.length === 0) return reject({ message: 'Usuario no encontrado.' });
+
+            const user = results[0];
+            resolve({
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                perfil: {
+                    id: user.perfil_id,
+                    nombre: user.nombre,
+                    apellido: user.apellido
+                }
+            });
+        });
+    });
+};
+
+module.exports = {
+    createUser,
+    getCurrentUserWithProfile,
+    getAllUsers
+};

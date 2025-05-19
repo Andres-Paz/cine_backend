@@ -23,13 +23,25 @@ const getFunciones = (pelicula_id) => {
         const currentTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
 
         let query = `
-            SELECT * FROM funciones
+            SELECT 
+                funciones.*, 
+                sala.nombre AS sala_nombre, 
+                sala.tipo AS sala_tipo,
+                sala.cupo - IFNULL(ticket_counts.total_tickets, 0) AS cupo_disponible
+            FROM funciones
+            INNER JOIN sala ON funciones.sala_id = sala.id
+            LEFT JOIN (
+                SELECT funciones_id, COUNT(*) AS total_tickets
+                FROM ticket
+                GROUP BY funciones_id
+            ) AS ticket_counts ON funciones.id = ticket_counts.funciones_id
             WHERE (fecha > ? OR (fecha = ? AND hora_inicio >= ?))
         `;
+        
         const params = [today, today, currentTime];
 
         if (pelicula_id) {
-            query += ' AND pelicula_id = ?';
+            query += ' AND funciones.pelicula_id = ?';
             params.push(pelicula_id);
         }
 
@@ -42,10 +54,25 @@ const getFunciones = (pelicula_id) => {
 
 
 
+
 // Obtener función por ID
 const getFuncionById = (id) => {
     return new Promise((resolve, reject) => {
-        const query = 'SELECT * FROM funciones WHERE id = ?';
+        const query = `
+            SELECT 
+                funciones.*, 
+                sala.nombre AS sala_nombre, 
+                sala.tipo AS sala_tipo,
+                sala.cupo - IFNULL(ticket_counts.total_tickets, 0) AS cupo_disponible
+            FROM funciones
+            INNER JOIN sala ON funciones.sala_id = sala.id
+            LEFT JOIN (
+                SELECT funciones_id, COUNT(*) AS total_tickets
+                FROM ticket
+                GROUP BY funciones_id
+            ) AS ticket_counts ON funciones.id = ticket_counts.funciones_id
+            WHERE funciones.id = ?
+        `;
         db.query(query, [id], (err, results) => {
             if (err) return reject(err);
             if (results.length === 0) return reject({ message: 'Función no encontrada' });
@@ -53,6 +80,7 @@ const getFuncionById = (id) => {
         });
     });
 };
+
 
 // Actualizar función
 const updateFuncion = (id, { fecha, hora_inicio, hora_final, sala_id }) => {

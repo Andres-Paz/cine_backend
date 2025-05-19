@@ -13,4 +13,9 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.post('/logout', (req, res) => {
+
+    res.status(200).json({ message: 'Logout exitoso. Elimina el token en el cliente.' });
+});
+
 module.exports = router;
