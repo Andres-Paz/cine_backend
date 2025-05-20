@@ -1,26 +1,46 @@
 const db = require('../config/db');
 
 
-const createFuncion = ({ fecha, hora_inicio, hora_final, sala_id, pelicula_id}) => {
+const createFuncion = ({ fecha, hora_inicio, hora_final, sala_id, pelicula_id }) => {
     return new Promise((resolve, reject) => {
         if (!fecha || !hora_inicio || !hora_final || !sala_id || !pelicula_id) {
             return reject({ message: 'Todos los campos son requeridos' });
         }
 
         const query = 'INSERT INTO funciones (fecha, hora_inicio, hora_final, sala_id, pelicula_id) VALUES (?, ?, ?, ?, ?)';
-        const fechaValidada = new Date(fecha);
-        db.query(query, [fechaValidada, hora_inicio, hora_final, sala_id, pelicula_id], (err, result) => {
+        
+        // No convertimos la fecha a Date, se usa el string tal cual (YYYY-MM-DD)
+        db.query(query, [fecha, hora_inicio, hora_final, sala_id, pelicula_id], (err, result) => {
             if (err) return reject(err);
-            resolve({ id: result.insertId, fechaValidada, hora_inicio, hora_final, sala_id, pelicula_id});
+            resolve({ 
+                id: result.insertId, 
+                fecha, 
+                hora_inicio, 
+                hora_final, 
+                sala_id, 
+                pelicula_id 
+            });
         });
     });
 };
 
+
 const getFunciones = (pelicula_id) => {
     return new Promise((resolve, reject) => {
         const now = new Date();
-        const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
-        const currentTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+
+        // Fecha local en formato YYYY-MM-DD
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const today = `${year}-${month}-${day}`;
+        
+        // Hora local en formato HH:MM:SS
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const currentTime = `${hours}:${minutes}:${seconds}`;
+        
 
         let query = `
             SELECT 

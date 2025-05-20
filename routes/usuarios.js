@@ -7,13 +7,29 @@ const {
     getAllUsers
 } = require('../usuarios/usuarioService');
 
-// Crear usuario
+// Crear usuario (requiere autenticación, rol puede variar)
 router.post('/', authenticateJWT, async (req, res) => {
     try {
         const user = await createUser(req.body);
         res.status(201).json(user);
     } catch (error) {
         res.status(400).json(error);
+    }
+});
+
+// Crear usuario público (rol fijo: usuario, sin JWT)
+router.post('/public', async (req, res) => {
+    try {
+        const newUserData = {
+            ...req.body,
+            role: 'usuario' // fuerza el rol como "usuario"
+        };
+
+        const user = await createUser(newUserData);
+        res.status(201).json(user);
+    } catch (error) {
+        console.error('Error al registrar usuario:', error);
+        res.status(400).json({ message: 'Error al registrar usuario', details: error.message });
     }
 });
 
@@ -24,16 +40,14 @@ router.get('/me', authenticateJWT, async (req, res) => {
         const user = await getCurrentUserWithProfile(userId);
         res.status(200).json(user);
     } catch (error) {
-        console.error('Error al obtener el usuario:', error);  // <---- aquí
+        console.error('Error al obtener el usuario:', error);
         res.status(400).json({ message: 'Error al obtener el usuario', details: error.message });
     }
 });
 
-
 // Obtener todos los usuarios (solo admins)
 router.get('/', authenticateJWT, async (req, res) => {
     try {
-        // ✅ El JWT ya fue decodificado por authenticateJWT y está en req.user
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Acceso denegado. Solo administradores.' });
         }
@@ -44,6 +58,5 @@ router.get('/', authenticateJWT, async (req, res) => {
         res.status(500).json({ message: 'Error al obtener los usuarios.', error });
     }
 });
-
 
 module.exports = router;

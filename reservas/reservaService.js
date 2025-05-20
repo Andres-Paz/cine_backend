@@ -38,33 +38,59 @@ const createTicket = async ({ fecha, precio, butaca, perfil_id, funciones_id }) 
     });
 };
 
-// ✅ Obtener todos los tickets con filtros opcionales por funcion_id y perfil_id
+// Obtener todos los tickets con filtros opcionales por funcion_id y perfil_id
 const getAllTickets = (funcion_id, perfil_id) => {
     return new Promise((resolve, reject) => {
-        let query = 'SELECT * FROM ticket';
-        const conditions = [];
-        const params = [];
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const today = `${year}-${month}-${day}`;
+  
+      let query = `
+        SELECT 
+            t.id,
+            t.fecha,
+            t.precio,
+            t.butaca,
+            t.perfil_id,
+            t.funciones_id,
+            f.id AS funcion_id,
+            f.fecha AS funcion_fecha,
+            f.hora_inicio,
+            s.id AS sala_id,
+            s.nombre AS sala_nombre
+            FROM ticket t
+            JOIN funciones f ON t.funciones_id = f.id
+            JOIN sala s ON f.sala_id = s.id
+            WHERE t.fecha >= ?
 
-        if (funcion_id) {
-            conditions.push('funciones_id = ?');
-            params.push(funcion_id);
-        }
-
-        if (perfil_id) {
-            conditions.push('perfil_id = ?');
-            params.push(perfil_id);
-        }
-
-        if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
-        }
-
-        db.query(query, params, (err, results) => {
-            if (err) return reject(err);
-            resolve(results);
-        });
+      `;
+  
+      const conditions = [];
+      const params = [today];
+  
+      if (funcion_id) {
+        conditions.push('t.funciones_id = ?');
+        params.push(funcion_id);
+      }
+  
+      if (perfil_id) {
+        conditions.push('t.perfil_id = ?');
+        params.push(perfil_id);
+      }
+  
+      if (conditions.length > 0) {
+        query += ' AND ' + conditions.join(' AND ');
+      }
+  
+      db.query(query, params, (err, results) => {
+        if (err) return reject(err);
+        resolve(results);
+      });
     });
-};
+  };
+  
 
 // Obtener ticket por ID
 const getTicketById = (id) => {
